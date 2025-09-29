@@ -6,6 +6,7 @@
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{subfigure}
+% \usepackage{algorithm2e}
 \usepackage{booktabs} % for professional tables
 
 % hyperref makes hyperlinks in the resulting PDF.
@@ -128,10 +129,32 @@ Gross violations will trigger corrections at the camera-ready phase.
 
 \section{Methodology}
 
+\paragraph{Greedy Frequency Allocation and Per-task Scaling.} 
+We propose a two-stage procedure to construct task-specific masks $M_t$ and scaling vectors $G_t$ such that task subspaces $\mathcal{S}_t$ remain approximately orthogonal and each task achieves performance comparable to single-task training.  
+
+\textbf{Stage 1: Greedy Frequency Allocation.}  
+Given a total frequency budget $\Omega = \{1, \dots, d\}$, we sequentially allocate disjoint frequency subsets to each task.  
+Formally, for $T$ tasks, we initialize $\Omega_1 = \Omega$ and iterate:
 \begin{align}
-    \Delta \mW & = \mU\mV + \mathcal{F}(\mU\mV, \mA, \mB) \\
-    \mathcal{F}(\mU\mV, \mA, \mB) & = \frac{1}{D_1D_2}\sum_{j=1}^{D_1} \frac{\mA}{j}e^{2\pi i \cdot jUV} \cdot \sum_{k=1}^{D_2} \frac{\mB}{k}e^{2\pi i \cdot kUV} \notag
+    M_t(i) &= 
+    \begin{cases}
+      1, & \text{if } i \in \arg\max_{S \subseteq \Omega_t,\, |S|=k} \Phi_t(S), \\
+      0, & \text{otherwise},
+    \end{cases} \\
+    \Omega_{t+1} &= \Omega_t \setminus \{ i : M_t(i) = 1 \},
 \end{align}
+where $\Phi_t(S)$ is a task-specific utility score (e.g., validation accuracy or gradient alignment) for selecting frequency set $S$ of size $k$.  
+
+\textbf{Stage 2: Per-task Least Squares Scaling.}  
+After masks $M_t$ are fixed, we compute the scaling vector $G_t \in \mathbb{R}^d$ for each task by solving a least squares problem:
+\begin{align}
+    G_t^\star = \arg\min_{G \in \mathbb{R}^d} 
+    \big\| Y_t - U \cdot \mathcal{F}^{-1}\!\big( M_t \odot (F(V) \odot G ) \big) X_t \big\|_2^2,
+\end{align}
+where $(X_t, Y_t)$ denote the task training data.  
+
+This construction ensures that task subspaces $\mathcal{S}_t$ have minimal overlap due to disjoint frequency allocation, while $G_t$ adapts to individual task statistics to recover near single-task performance.
+
 
 \section{Electronic Submission}
 \label{submission}
@@ -639,19 +662,147 @@ paper is later flagged for ethics review.
 \newpage
 \appendix
 \onecolumn
-\section{Gradient Jacobian Analysis}
 
-You can have as much text here as you want. The main body must be at most $8$ pages long.
-For the final version, one more page can be added.
-If you want, you can use an appendix like this one.  
+\section{Frequency Domain Analysis}
 
-The $\mathtt{\backslash onecolumn}$ command above can be kept in place if you prefer a one-column appendix, or can be removed if you prefer a two-column appendix.  Apart from this possible change, the style (font size, spacing, margins, page numbering, etc.) should be kept the same as the main body.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental Hyperparameters}
 
-\section{Gradient Upperbound Analysis}
+\section{MT Bench Case Study}
 
-\section{Gradient Variance Analysis}
+\section{Proof of Rank Increasement}
+Let $\mW_{UV}\in\mathbb{R}^{m\times n}$. Denote by $\mathcal{F}:\mathbb{C}^{m\times n}\to\mathbb{C}^{m\times n}$ the 2D DFT acting on the matrix entries (we use the convention that $\mathcal{F}$ is invertible and $\mathcal{F}^{-1}$ is the inverse DFT). For a frequency-domain mask $\mM_t\in\mathbb{C}^{m\times n}$ define the frequency-domain multiplication operator for task $t$
+\begin{align}
+\mathcal{T}_{\mM_t}(\mW_{UV}) \coloneqq \mathcal{F}^{-1}\big(\mM_t \odot \mathcal{F}(\mW_{UV})\big),
+\end{align}
+where $\odot$ denotes elementwise (Hadamard) product. We will study $\mathcal{T}_{\mM_t}(\mW_{UV})$ when $\mW_{UV}=\mU\mV$ with $\mU\in\mathbb{R}^{m\times r}, \mV\in\mathbb{R}^{r\times n}$ (so $\operatorname{rank}(\mW_{UV})\le r$).
+
+Observe that elementwise multiplication in frequency is equivalent to circular convolution in spatial domain: there exists a spatial kernel $h\in\mathbb{C}^{m\times n}$ (the inverse DFT of $M$) such that
+\begin{align}
+\mathcal{T}_{\mM_t}(\mW_{UV}) = h \star_{\mathrm{circ}} \mW_{UV},
+\end{align}
+where $\star_{\mathrm{circ}}$ denotes 2D circular convolution (convolution performed with wrap-around on both dimensions). The following theorem makes precise how the rank can increase.
+
+\begin{theorem}[Rank increase under nontrivial frequency masking]
+\label{thm:rank_increase}
+Let $\mW_{UV}=\sum_{i=1}^r u_i v_i^\top$ with $u_i\in\mathbb{R}^m$, $v_i\in\mathbb{R}^n$ (so $\operatorname{rank}(\mW_{UV})\le r$). Let $\mM_t$ be a frequency mask and write $h=\mathcal{F}^{-1}(\mM_t)\in\mathbb{C}^{m\times n}$ for its inverse DFT (the spatial kernel). Suppose $h$ can be written as a finite sum of $t$ distinct shifted deltas (i.e. it is supported on $t$ distinct circular shifts):
+\begin{align}
+h = \sum_{k=1}^{t} \alpha_k S_{s_k,t_k}(\Delta),
+\end{align}
+where $\alpha_k\in\mathbb{C}\setminus\{0\}$, $S_{s_k,t_k}$ denotes the circular shift operator by $(s_k,t_k)$ in the two dimensions, and $\Delta$ is the Kronecker delta at the origin. (Equivalently, $h$ has exactly $t$ nonzero entries located at distinct coordinates.) Then
+\begin{align}
+\mathcal{T}_{\mM_t}(\mW_{UV}) \;=\; \sum_{k=1}^{t} \alpha_k \, S_{s_k,t_k}(\mW_{UV}).
+\end{align}
+In particular, if for each fixed $i$ the set of shifted vectors $\{\,S_{s_k} u_i : k=1,\dots,t\,\}$ (row-shifts of $u_i$) contains at least $t_i$ linearly independent vectors, and similarly the column-shifts of $v_i$ are in general position, then generically
+\begin{align}
+\operatorname{rank}\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big) \ge \min\big( r\cdot t, \; \min(m,n) \big).
+\end{align}
+Hence, for any $X$ of rank $r$ there exist masks $M$ (equivalently kernels $h$ with $t\!>\!1$ nonzero shifts) such that
+\begin{align}
+\operatorname{rank}\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big) > \operatorname{rank}(\mW_{UV}).
+\end{align}
+\end{theorem}
+
+\begin{proof}
+Step 1 (convolution expansion). Since $h=\mathcal{F}^{-1}(M)$, by linearity of DFT/IDFT and the convolution theorem we have for any matrix $\mW_{UV}$,
+\begin{align}
+\mathcal{T}_{\mM_t}(\mW_{UV}) = h \star_{\mathrm{circ}} \mW_{UV}.
+\end{align}
+If $h$ is supported on $t$ distinct circular shifts (i.e. has nonzero entries at exactly $t$ coordinates), then the circular convolution with $\mW_{UV}$ reduces to a finite sum of shifted copies of $X$ weighted by those kernel entries. Writing the shifts explicitly,
+\begin{align}
+h=\sum_{k=1}^t \alpha_k S_{s_k,t_k}(\Delta)
+\quad\Longrightarrow\quad
+h\star_{\mathrm{circ}} \mW_{UV} = \sum_{k=1}^t \alpha_k\, S_{s_k,t_k}(\mW_{UV}),
+\end{align}
+where $S_{s_k,t_k}(\mW_{UV})$ denotes $\mW_{UV}$ circularly shifted by $(s_k,t_k)$ (shift of rows by $s_k$ and columns by $t_k$).
+
+Step 2 (apply to rank-$1$ atoms). For a rank--1 matrix $\mW_{UV} = u v^\top$ we then get
+\begin{align}
+\mathcal{T}_{\mM_t}(u v^\top) = \sum_{k=1}^t \alpha_k \, S_{s_k}(u)\,S_{t_k}(v)^\top
+\end{align}
+which is an explicit sum of $t$ rank--1 matrices. If the set of row-shifted vectors $\{S_{s_k}(u)\}_{k=1}^t$ is linearly independent (or, more weakly, if the family of outer products produce a span of dimension $t$), then the rank of the right-hand side equals $t$ (up to the ambient dimension limit). Thus a single rank--1 atom can be mapped to a matrix of rank up to $\min(t,\min(m,n))$.
+
+Step 3 (general rank $r$). For general $\mW_{UV}=\sum_{i=1}^r u_i v_i^\top$, by linearity
+\begin{align}
+\mathcal{T}_{\mM_t}(\mW_{UV}) = \sum_{i=1}^r \sum_{k=1}^t \alpha_k \, S_{s_k}(u_i)\,S_{t_k}(v_i)^\top,
+\end{align}
+a sum of $r\cdot t$ rank--1 terms. The rank of this sum is bounded above by $\min(r\cdot t,\min(m,n))$ and (by standard genericity arguments) is equal to that upper bound for a generic choice of the vectors $\{u_i\}$, $\{v_i\}$ and nondegenerate coefficients $\{\alpha_k\}$. Consequently, whenever $t>1$ and the shifts produce new independent components (i.e. the shifted vectors are not all collinear), the rank strictly increases compared to the original rank $\le r$.
+
+Step 4 (existence). The final statement follows because one can always choose a mask $M$ whose inverse DFT $h$ is (for example) the sum of $t$ distinct Kronecker deltas with nonzero weights; such an $M$ exists (take $M=\mathcal{F}(h)$). For such masks, provided the data vectors are not in a degenerate alignment, the rank strictly increases.
+
+This completes the proof.
+\end{proof}
+
+\begin{remark}
+\begin{enumerate}
+\item The hypothesis that $h$ is a sum of a finite number of shifted deltas is only one convenient constructive case; more generally if $h$ has effective support on $t$ well-separated locations (or can be approximated by such), the same reasoning applies approximately.
+\item The result is \emph{generic} in the sense that for an open dense set of masks $M$ (or of input factors $U,V$) the inequality $\operatorname{rank}(\mathcal{T}_{\mM_t}(UV))>\operatorname{rank}(UV)$ holds whenever the spatial kernel has $t>1$ effective shifts. Degenerate counterexamples exist (e.g. if $U$ or $V$ have shift-invariant structure that cancels the shifts), so one must state the nondegeneracy assumptions as above.
+\item In operator notation: vec$(\mathcal{T}_{\mM_t}(\mW_{UV})) = C_M\,\mathrm{vec}(X)$ where $C_M=\mathcal{F}^{-1}\operatorname{diag}(\mathrm{vec}(M))\mathcal{F}$ is a linear operator; for generic $M$ the operator $C_M$ is full (or high) rank, so it does not preserve low rank of $X$.
+\end{enumerate}
+\end{remark}
+
+\section{Gradient Analysis}
+
+Let the network output be
+\[
+y = (W + \Delta) x + b,
+\qquad
+\Delta \in\mathbb{R}^{m\times n},
+\]
+and loss \(\ell(y)\). Denote \(g \coloneqq \frac{\partial \ell}{\partial y}\in\mathbb{R}^{m}\) (column vector) and the input to the layer \(x\in\mathbb{R}^{n}\). Then the matrix
+\[
+G \coloneqq \frac{\partial \ell}{\partial \Delta} = g\,x^\top \in\mathbb{R}^{m\times n}.
+\]
+We compare two parameterizations of \(\Delta\):
+
+\begin{itemize}
+  \item \textbf{Direct LoRA (spatial):} \(\Delta = UV\), with \(U\in\mathbb{R}^{m\times r},\ V\in\mathbb{R}^{r\times n}\).
+  \item \textbf{Freq-masked LoRA:} \(\Delta = \mathcal{A}(UV)\), where \(\mathcal{A}:\mathbb{C}^{m\times n}\to\mathbb{C}^{m\times n}\) is the linear operator
+  \[
+  \mathcal{A}(X) \coloneqq \mathcal{F}^{-1}\big( M \odot \mathcal{F}(X)\big)
+  = F^{-1}\,\mathrm{diag}(\mathrm{vec}(M))\,F\,\mathrm{vec}^{-1}(\cdot)
+  \]
+  (we treat \(\mathcal{F}\) as the linear DFT operator on \(\mathrm{vec}(X)\)).
+\end{itemize}
+
+\section*{Gradient formulae}
+For both parameterizations, by the chain rule we obtain closed-form gradients.
+
+\begin{lemma}[Closed-form gradients]
+\label{lem:grad_forms}
+Let \(G = g x^\top\).
+\begin{enumerate}
+\item If \(\Delta = UV\), then
+\[
+\frac{\partial \ell}{\partial U} = G V^\top,\qquad
+\frac{\partial \ell}{\partial V} = U^\top G.
+\]
+\item If \(\Delta = \mathcal{A}(UV)\), denote by \(\mathcal{A}^*\) the adjoint of \(\mathcal{A}\) under the Frobenius inner product. Then
+\[
+\frac{\partial \ell}{\partial U} = \mathcal{A}^*(G)\,V^\top,\qquad
+\frac{\partial \ell}{\partial V} = U^\top \mathcal{A}^*(G).
+\]
+Moreover, when \(\mathcal{A}(X)=\mathcal{F}^{-1}\big(M\odot\mathcal{F}(X)\big)\),
+\(
+\mathcal{A}^*(G)=\mathcal{F}^{-1}\big(\overline{M}\odot\mathcal{F}(G)\big)
+\)
+(where \(\overline{M}\) denotes complex conjugate of \(M\)).
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) Standard: \(\partial \mathrm{tr}(G^\top UV)/\partial U = G V^\top\) and symmetrically for \(V\).
+
+(2) By linearity and chain rule:
+\[
+\frac{\partial \ell}{\partial U}
+= \left(\frac{\partial \ell}{\partial \Delta}\right)\, \frac{\partial \Delta}{\partial (UV)} \frac{\partial (UV)}{\partial U}
+= \mathcal{A}^*(G)\,V^\top,
+\]
+and similarly for \(V\). The explicit form of \(\mathcal{A}^*\) follows because \(\mathcal{F}\) is unitary (up to scaling) and the adjoint of elementwise multiplication by \(M\) is elementwise multiplication by \(\overline{M}\).
+\qedhere
+\end{proof}
+
+
 
 \end{document}
 
@@ -669,3 +820,8 @@ The $\mathtt{\backslash onecolumn}$ command above can be kept in place if you pr
 % lightly changed version of the previous year's version by Andrew
 % Moore, which was in turn edited from those of Kristian Kersting and
 % Codrina Lauth. Alex Smola contributed to the algorithmic style files.
+% 用LoRA做multitask learning, \mathcal{S}_t = \mathrm{span}\left\{ U \cdot \mathcal{F}^{-1}\!\big(M_t \odot Z \big) : Z \in \mathbb{R}^{r \times d} \right\}. 先用multitask learning學好U和V，然後請給我一個方法規定每個subtask的mask M和scaling vector G。讓各個subtask互相不幹擾，而且單個任務的效能接近單任務訓練。
+
+% 現在我有一個lora模組UV。UV是通過multitask learning學習出來的，接下來我要給他做FFT，然後用一個mask來選擇10%的頻率，然後再加一個額外的頻率來微調到下遊任務。請幫我設計一個演算法，實現mask如何選擇最合適的頻率，以及額外頻率應該加在頻譜的哪些位置上
+
+% 現在我有一個lora模組UV。 y= (W + IFFT(M_t \odot FFT(UV)))x + b，幫我用可以寫在ICML論文裡面的latex格式，嚴謹證明IFFT(M_t \odot FFT(UV))的rank要大於UV
