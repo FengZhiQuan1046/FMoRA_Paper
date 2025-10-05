@@ -718,55 +718,55 @@ paper is later flagged for ethics review.
 \section{Proof of Rank Increasement}
 
 
-
-
 \section{Rank Increasement Analysis}
 \label{appendix:rank_increasement}
 
-
-
-
-\begin{theorem}[ under nontrivial frequency masking]
+\begin{theorem}[Rank increase under nontrivial frequency masking]
 \label{thm:rank_increasement}
-Let $\mathbb{K}$ be either $\mathbb{R}$ or $\mathbb{C}$, denoting respectively the field of real or complex numbers. 
-Let $\mW_{UV} = \sum_{i=1}^r \mU_i \mV_i^\top$ with $\mU_i\in\mathbb{K}^m$ and $\mV_i\in\mathbb{K}^n$ (so $\operatorname{rank}(\mW_{UV})\le r$). 
-Let $\mM_t\in\mathbb{C}^{m\times n}$ be a frequency-domain mask and define its inverse DFT 
-$h = \mathcal{F}^{-1}(\mM_t)\in\mathbb{C}^{m\times n}$, interpreted as the corresponding spatial convolution kernel. 
+Let $\mathbb{K}$ denote either $\mathbb{R}$ or $\mathbb{C}$.
+Consider a rank--$r$ matrix
+\[
+\mW_{UV} = \sum_{i=1}^r \mU_i \mV_i^\top, \quad 
+  \mU_i \in \mathbb{K}^m,\ \mV_i \in \mathbb{K}^n,
+\]
+so that $\operatorname{rank}(\mW_{UV}) \le r$.
+Let $\mM_t \in \mathbb{C}^{m\times n}$ be the frequency-domain mask for task $t$, and define its inverse DFT
+$h = \mathcal{F}^{-1}(\mM_t) \in \mathbb{C}^{m\times n}$, 
+interpreted as the spatial convolution kernel.
 
-Assume that $h$ has finite support on $t$ distinct circular shifts, i.e.
+Assume that $h$ has finite support on $e$ distinct circular shifts, i.e.
 \begin{align}
-h = \sum_{k=1}^{t} \alpha_k\, S_{s_k,t_k}(\Delta),
+h = \sum_{k=1}^{e} \alpha_k\, S_{s_k,e_k}(\Delta),
+\quad \alpha_k \in \mathbb{C}\setminus\{0\}, \notag
 \end{align}
-where $\alpha_k\in\mathbb{C}\setminus\{0\}$, 
-$\Delta$ denotes the Kronecker delta at the origin, 
-and $S_{s,t}:\mathbb{K}^{m\times n}\!\to\!\mathbb{K}^{m\times n}$ denotes the two-dimensional circular shift operator defined by
+where $S_{s,e}$ denotes the two-dimensional circular shift operator:
 \begin{align}
-  [S_{s,t}(\mX)]_{i,j} = \mX_{(i-s)\bmod m,\,(j-t)\bmod n}.
+  [S_{s,e}(\mX)]_{i,j} = \mX_{(i-s)\bmod m,\,(j-e)\bmod n}. \notag
 \end{align}
-For a vector $\mU\in\mathbb{K}^m$, we define $S_s(\mU)\in\mathbb{K}^m$ analogously as the circular shift by $s$ along its entries, 
-so that $S_{s,t}(\mU \mV^\top) = S_s(\mU)\,S_t(\mV)^\top$.
+For $\mU\in\mathbb{K}^m$, let $S_s(\mU)$ denote the corresponding 1D circular shift, 
+so that $S_{s,e}(\mU \mV^\top) = S_s(\mU) S_e(\mV)^\top$.
 
 Then the frequency-masked transform of $\mW_{UV}$ satisfies
 \begin{align}
 \mathcal{T}_{\mM_t}(\mW_{UV})
-  = \sum_{k=1}^{t} \alpha_k\, S_{s_k,t_k}(\mW_{UV})
-  = \sum_{i=1}^{r}\sum_{k=1}^{t} \alpha_k\, S_{s_k}(\mU_i)\,S_{t_k}(\mV_i)^\top.
+  &= \sum_{k=1}^{e} \alpha_k\, S_{s_k,e_k}(\mW_{UV})
+   = \sum_{i=1}^{r}\sum_{k=1}^{e} \alpha_k\, S_{s_k}(\mU_i)\,S_{e_k}(\mV_i)^\top. \notag
 \end{align}
 
-Suppose further that the following \emph{nondegeneracy (genericity) conditions} hold:
+Suppose the following \emph{nondegeneracy conditions} hold:
 \begin{enumerate}
-\item For each $i$, the set of shifted vectors $\{S_{s_k}(\mU_i)\}_{k=1}^{t}$ is linearly independent over $\mathbb{K}$ (or at least spans a $t_i$-dimensional subspace with $t_i\ge 2$), and similarly $\{S_{t_k}(\mV_i)\}_{k=1}^{t}$ are in general position.
-\item The families $\{S_{s_k}(\mU_i)\}_{i,k}$ and $\{S_{t_k}(\mV_i)\}_{i,k}$ corresponding to different $i$ are in general position, i.e. their Kruskal ranks satisfy the usual generic full-rank condition.\footnote{That is, for an open dense subset of $(\mU_i,\mV_i)$ in $\mathbb{K}^{m\times r}\times\mathbb{K}^{n\times r}$ the set of rank--1 outer products $\{S_{s_k}(\mU_i)S_{t_k}(\mV_i)^\top\}_{i,k}$ is linearly independent up to the ambient limit.}
+\item[\textbf{(a)}] For each $i$, the shifted vectors $\{S_{s_k}(\mU_i)\}_{k=1}^e$ are linearly independent (or span a subspace of dimension $t_i \ge 2$), and similarly $\{S_{e_k}(\mV_i)\}_{k=1}^e$ are in general position.
+\item[\textbf{(b)}] The combined families $\{S_{s_k}(\mU_i)\}_{i,k}$ and $\{S_{e_k}(\mV_i)\}_{i,k}$ are in general position across different $i$, i.e. their Kruskal ranks satisfy the standard generic full-rank condition.\footnote{Formally, for an open dense subset of $(\mU_i,\mV_i)\in\mathbb{K}^{m\times r}\times\mathbb{K}^{n\times r}$, the outer products $\{S_{s_k}(\mU_i)S_{e_k}(\mV_i)^\top\}_{i,k}$ are linearly independent up to the ambient limit.}
 \end{enumerate}
-Then generically
+Then, generically,
 \begin{align}
 \operatorname{rank}\!\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big)
-  = \min\!\big( rt,\; \min(m,n) \big).
+  = \min\!\big(re,\ \min(m,n)\big). \notag
 \end{align}
-In particular, whenever $t>1$ and the above nondegeneracy conditions are satisfied,
+In particular, whenever $e>1$ and conditions (a)--(b) hold,
 \begin{align}
 \operatorname{rank}\!\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big)
-   > \operatorname{rank}(\mW_{UV}).
+   > \operatorname{rank}(\mW_{UV}). \notag
 \end{align}
 \end{theorem}
 
@@ -774,140 +774,119 @@ In particular, whenever $t>1$ and the above nondegeneracy conditions are satisfi
 \label{lem:khatri-rao}
 For any $u\in\mathbb{K}^m$ and $v\in\mathbb{K}^n$,
 \begin{align}
-  \mathrm{vec}\!\big(S_s(u)\,S_t(v)^\top\big)
-  = S_t(v)\odot S_s(u),
+  \mathrm{vec}\!\big(S_s(u)\,S_e(v)^\top\big)
+  = S_e(v) \odot S_s(u), \notag
 \end{align}
 where $\odot$ denotes the columnwise Kronecker (Khatri--Rao) product.
-For a collection $\{S_{s_k}(\mU_i)S_{t_k}(\mV_i)^\top\}_{i=1,\dots,r;\,k=1,\dots,t}$,
-define the matrix
+Let
 \begin{align}
-A := \big[\,S_{t_1}(\mV_1)\!\odot\!S_{s_1}(\mU_1),~
-   S_{t_2}(\mV_1)\!\odot\!S_{s_2}(\mU_1),~
+A
+  := \big[\,S_{e_1}(\mV_1)\!\odot\!S_{s_1}(\mU_1),~
    \dots,~
-   S_{t_t}(\mV_r)\!\odot\!S_{s_t}(\mU_r)\,\big]
-   \in\mathbb{K}^{mn\times (r t)}.
+   S_{e_e}(\mV_r)\!\odot\!S_{s_e}(\mU_r)\,\big]
+   \in\mathbb{K}^{mn\times (r e)}. \notag
 \end{align}
-If $A$ has full column rank, then the corresponding rank--1 atoms 
-$\{S_{s_k}(\mU_i)S_{t_k}(\mV_i)^\top\}_{i,k}$ are linearly independent, and hence
+If $A$ has full column rank, the corresponding rank--1 atoms 
+$\{S_{s_k}(\mU_i)S_{e_k}(\mV_i)^\top\}_{i,k}$ are linearly independent. Consequently,
 \begin{align}
   \operatorname{rank}\!\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big)
-  = \min(rt,\,\min(m,n)).
+  = \min(re,\,\min(m,n)). \notag
 \end{align}
-Moreover, full column rank of $A$ holds for an open dense subset of 
-$(\mU_i,\mV_i)\in\mathbb{K}^{m\times r}\!\times\!\mathbb{K}^{n\times r}$,
-since $\det(A^\top A)$ is a nonzero polynomial in the entries of $\mU_i,\mV_i$.
+Moreover, $A$ has full column rank for an open dense subset of $(\mU_i,\mV_i)\in\mathbb{K}^{m\times r}\times\mathbb{K}^{n\times r}$, since $\det(A^\top A)$ is a nonzero polynomial in the entries of $\mU_i,\mV_i$.
 \end{lemma}
 
 \begin{assumption}[Nondegeneracy]
 \label{assump:nondegeneracy}
-We assume the following conditions hold:
-\begin{enumerate}%[(a)]
-    \item The singular vectors $\{u_i\}_{i=1}^r$ and $\{v_i\}_{i=1}^r$ of $\mW_{UV} = \sum_{i=1}^r \mU_i \mV_i^\top$ are linearly independent, i.e.,
-    \[
+We guarantee the following:
+\begin{enumerate}
+    \item The singular random variable vectors $\{\mU_i\}_{i=1}^r$ and $\{\mV_i\}_{i=1}^r$ of $\mW_{UV}$ are linearly independent:
+    \begin{align}
         \mathrm{rank}\big([\mU_1,\dots,\mU_r]\big) = r, \quad 
-        \mathrm{rank}\big([\mV_1,\dots,\mV_r]\big) = r.
-    \]
-    \item The frequency mask $\mM_t \in \mathbb{C}^{m \times n}$ is \emph{nontrivial}, meaning that it is not proportional to the all-one matrix and contains at least one element with a distinct complex phase or magnitude, formally,
-    \[
+        \mathrm{rank}\big([\mV_1,\dots,\mV_r]\big) = r. \notag
+    \end{align}
+    \item The frequency mask $\mM_t$ is \emph{nontrivial}, meaning it is not proportional to the all-one matrix and contains at least one entry with distinct complex magnitude or phase:
+    \begin{align}
         \exists (p,q),(p',q') \text{ such that } 
-        \mM_t(p,q) \neq \alpha\, \mM_t(p',q') \text{ for any } \alpha \in \mathbb{C}.
-    \]
+        \mM_t(p,q) \neq \alpha\, \mM_t(p',q') \text{ for any } \alpha \in \mathbb{C}. \notag
+    \end{align}
 \end{enumerate}
 \end{assumption}
 
-
 \begin{proof}
-\textbf{Step 1 (Convolution representation).} 
-By the convolution theorem, multiplication by $\mM_t$ in the frequency domain corresponds to circular convolution by its inverse DFT $h$ in the spatial domain:
+\textbf{Step 1 (Convolution representation).}
+By the convolution theorem, elementwise multiplication by $\mM_t$ in the frequency domain corresponds to circular convolution by its inverse DFT $h$ in the spatial domain:
 \begin{align}
-\mathcal{T}_{\mM_t}(\mW_{UV}) = h \star_{\mathrm{circ}} \mW_{UV}.
+\mathcal{T}_{\mM_t}(\mW_{UV}) = h \star_{\mathrm{circ}} \mW_{UV}. \notag
 \end{align}
-If $h$ is supported on $t$ distinct shifts, i.e.
-$h=\sum_{k=1}^t \alpha_k S_{s_k,t_k}(\Delta)$,
-then by linearity of convolution,
+If $h=\sum_{k=1}^e \alpha_k S_{s_k,e_k}(\Delta)$, linearity yields
 \begin{align}
 h\star_{\mathrm{circ}} \mW_{UV}
-  = \sum_{k=1}^t \alpha_k\, S_{s_k,t_k}(\mW_{UV}),
+  = \sum_{k=1}^e \alpha_k\, S_{s_k,e_k}(\mW_{UV}). \notag
 \end{align}
-where $S_{s_k,t_k}(\mW_{UV})$ denotes the circularly shifted copy of $\mW_{UV}$ by $(s_k,t_k)$.
 
-\textbf{Step 2 (Rank--1 component).} 
-For a single rank--1 matrix $\mW_{UV}=\mU \mV^\top$,
+\textbf{Step 2 (Rank--1 case).}
+For a single rank--1 factor $\mU\mV^\top$,
 \begin{align}
 \mathcal{T}_{\mM_t}(\mU \mV^\top)
-  = \sum_{k=1}^t \alpha_k\, S_{s_k}(\mU)\,S_{t_k}(\mV)^\top.
+  = \sum_{k=1}^e \alpha_k\, S_{s_k}(\mU)\,S_{e_k}(\mV)^\top. \notag
 \end{align}
-Each term is rank--1. 
-If the family of shifted vectors $\{S_{s_k}(\mU)\}$ is linearly independent and the shifted $\{S_{t_k}(\mV)\}$ are in general position, then the $t$ outer products are generically linearly independent (up to $\min(m,n)$). 
-Hence the rank of the resulting sum equals $\min(t,\min(m,n))$ for generic parameters.
+Each term is rank--1.  
+Under condition (a), the family $\{S_{s_k}(\mU)\,S_{e_k}(\mV)^\top\}_{k=1}^e$ is generically linearly independent up to $\min(e,\min(m,n))$, implying
+\begin{align}
+\operatorname{rank}\big(\mathcal{T}_{\mM_t}(\mU\mV^\top)\big)
+  = \min(e, \min(m,n)). \notag
+\end{align}
 
 \textbf{Step 3 (General rank--$r$ case).}
 For $\mW_{UV}=\sum_{i=1}^r \mU_i \mV_i^\top$,
 \begin{align}
 \mathcal{T}_{\mM_t}(\mW_{UV})
   &= \sum_{i=1}^r \mathcal{T}_{\mM_t}(\mU_i \mV_i^\top)
-   = \sum_{i=1}^r \sum_{k=1}^t \alpha_k\, S_{s_k}(\mU_i)\,S_{t_k}(\mV_i)^\top.
+   = \sum_{i=1}^r \sum_{k=1}^e \alpha_k\, S_{s_k}(\mU_i)\,S_{e_k}(\mV_i)^\top. \notag
 \end{align}
-The right-hand side is a linear combination of $r\!\cdot\!t$ rank--1 atoms. 
-Under assumption~\ref{assump:nondegeneracy}, the set of these rank--1 atoms is generically linearly independent up to the ambient limit, so the rank equals
+This is a linear combination of $r e$ rank--1 matrices.  
+By Lemma~\ref{lem:khatri-rao}, their vectorizations form the columns of $A$.  
+Under assumption~\ref{assump:nondegeneracy}, $A$ has full column rank generically, hence
 \begin{align}
 \operatorname{rank}\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big)
-  = \min(r t, \min(m,n)).
+  = \min(re,\,\min(m,n)). \notag
 \end{align}
 
-
-\textbf{Step 4 (Existence of such masks).}
-For any prescribed $t>1$, one can explicitly construct $h=\sum_{k=1}^t \alpha_k S_{s_k,t_k}(\Delta)$ with distinct shifts $(s_k,t_k)$ and nonzero $\alpha_k$, 
-and define $\mM_t = \mathcal{F}(h)$. 
-For generic $\mU_i,\mV_i$, the corresponding transform $\mathcal{T}_{\mM_t}$ then strictly increases rank.
+\textbf{Step 4 (Existence of suitable masks).}
+For any $e>1$, we can explicitly construct $h=\sum_{k=1}^e \alpha_k S_{s_k,e_k}(\Delta)$ with distinct shifts and nonzero $\alpha_k$, and define $\mM_t=\mathcal{F}(h)$.  
+By Step 3, such a nontrivial mask generically increases rank.
 
 \textbf{Step 5 (Field consistency).}
-If all $\alpha_k$, $\mU_i$, $\mV_i$ are real, the argument holds over $\mathbb{R}$; 
-if some $\alpha_k$ are complex, rank is interpreted over $\mathbb{C}$. 
-Either way, the statement remains valid with the appropriate field.
+The argument holds over $\mathbb{R}$ or $\mathbb{C}$ depending on $\alpha_k$.  
+In both cases, the rank formula remains valid.
 \end{proof}
 
 \begin{remark}[Discussion and genericity]
 \begin{enumerate}
 \item 
-The assumption that $h$ is a finite sum of shifted deltas is a constructive special case. 
-More generally, if $h$ has $t$ well-separated dominant coefficients (effective support), the same argument applies approximately, replacing exact rank by numerical rank determined by the singular values.
+The assumption that $h$ is a finite sum of shifted deltas is a constructive instance.  
+More generally, if $h$ has $e$ dominant coefficients (effective support), the same reasoning holds approximately when rank is replaced by numerical rank.
 
 \item 
-The conclusion is \emph{generic}: for an open dense subset of $(\mU_i,\mV_i,\alpha_k)$ in $\mathbb{K}^{m\times r}\!\times\!\mathbb{K}^{n\times r}\!\times\!(\mathbb{C}\setminus\{0\})^t$, 
-the linear independence of the rank--1 atoms 
-$\{S_{s_k}(\mU_i)S_{t_k}(\mV_i)^\top\}_{i,k}$ holds, and the rank achieves the upper bound $\min(r t,\min(m,n))$. 
-Degenerate counterexamples occur if $\mU_i$ or $\mV_i$ are shift-invariant (e.g. constant or periodic), in which case the rank may fail to increase.
+The result is \emph{generic}: for an open dense subset of $(\mU_i,\mV_i,\alpha_k)\in\mathbb{K}^{m\times r}\times\mathbb{K}^{n\times r}\times(\mathbb{C}\setminus\{0\})^e$, the rank--1 atoms $\{S_{s_k}(\mU_i)S_{e_k}(\mV_i)^\top\}_{i,k}$ are linearly independent, yielding the upper bound $\min(re,\min(m,n))$.  
+Degeneracies occur only for highly structured $\mU_i$ or $\mV_i$ (e.g., constant or periodic).
 
 \item 
-In vectorized operator form, 
+In vectorized operator form,
 \begin{align}
 \mathrm{vec}\!\big(\mathcal{T}_{\mM_t}(\mW_{UV})\big)
    = C_{\mM_t}\,\mathrm{vec}(\mW_{UV}),
-   \quad C_{\mM_t} := \mathcal{F}^{-1} \operatorname{diag}(\mathrm{vec}(\mM_t)) \mathcal{F}.
+   \quad 
+   C_{\mM_t} := \mathcal{F}^{-1} \operatorname{diag}(\mathrm{vec}(\mM_t)) \mathcal{F}. \notag
 \end{align}
-The operator $C_{\mM_t}$ has rank equal to the number of nonzero entries in $\mM_t$.
-If all frequencies are retained ($\mM_t$ has no zeros), $C_{\mM_t}$ is invertible (full rank).
-When $\mM_t$ is a nontrivial mask (some zeros), $C_{\mM_t}$ is not full rank, yet it can still map a low-rank $\mW_{UV}$ to a higher-rank output 
-because the linear mixing introduced by the circular shifts breaks the low-rank structure.
+The operator $C_{\mM_t}$ has rank equal to the number of nonzero entries in $\mM_t$.  
+Even when $C_{\mM_t}$ is not full-rank, the induced linear mixing via circular shifts can increase the rank of $\mW_{UV}$, thereby breaking the original low-rank structure.
 \end{enumerate}
 \end{remark}
 
-\section{ADD}
 
+% \noindent\textbf{Genericity clarification.}
 
-\noindent\textbf{Genericity clarification.}
-Condition~(b) may be stated equivalently as: 
-the matrix $A$ defined in Lemma~\ref{lem:khatri-rao} has full column rank.
-Equivalently, for all nonzero coefficient tensors $\{\beta_{i,k}\}$,
-\begin{align}
-  \sum_{i=1}^r\sum_{k=1}^t
-     \beta_{i,k}\,S_{s_k}(\mU_i)\,S_{t_k}(\mV_i)^\top = 0
-  \quad\Longrightarrow\quad
-  \beta_{i,k}=0~\forall i,k.
-\end{align}
-This condition is satisfied for an open dense set of $(\mU_i,\mV_i)$,
-so the rank formula holds \emph{generically}.
 
 
 % \section{Rank Increasement Prev. Ver.}
