@@ -797,7 +797,7 @@ Moreover, $A$ has full column rank for an open dense subset of $(\mU_i,\mV_i)\in
 
 \begin{assumption}[Nondegeneracy]
 \label{assump:nondegeneracy}
-We guarantee the following:
+We assume:
 \begin{enumerate}
     \item The singular random variable vectors $\{\mU_i\}_{i=1}^r$ and $\{\mV_i\}_{i=1}^r$ of $\mW_{UV}$ are linearly independent:
     \begin{align}
@@ -989,5 +989,7 @@ Even when $C_{\mM_t}$ is not full-rank, the induced linear mixing via circular s
 % 現在我有一個lora模組UV。UV是通過multitask learning學習出來的，接下來我要給他做FFT，然後用一個mask來選擇10%的頻率，然後再加一個額外的頻率來微調到下遊任務。請幫我設計一個演算法，實現mask如何選擇最合適的頻率，以及額外頻率應該加在頻譜的哪些位置上
 
 % 現在我有一個lora模組UV。 y= (W + IFFT(M_t \odot FFT(UV)))x + b，幫我用可以寫在ICML論文裡面的latex格式，嚴謹證明IFFT(M_t \odot FFT(UV))的rank要大於UV
+
+% 現在我有一個lora模組UV。 y= (W + IFFT(M_t \odot FFT(UV) + B))x，M_t由0和1組成。第一階段先用八個任務訓練multitask learning訓練UV，每個任務的M_t完全不重合各佔1/8，加起來是一個全是1的矩陣，訓練好以後只保留其各自的M_t \odot FFT(UV)的全部加起來的最終矩陣結果，且在下遊任務不訓練這個稠密。然後下遊任務用特定的任務資料集訓練B，B是一個高度離散的矩陣，只訓練對output最具顯著性的1%頻率。幫我用客觀嚴謹的推導過程分析其梯度，說明其訓練過程是否會有更加容易或者不容易。訓練的\Delta W的基底方向是否可以接近full finetune。
 
 
